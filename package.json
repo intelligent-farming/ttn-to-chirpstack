@@ -1,0 +1,29 @@
+{
+  "name": "@intelligent-farming/ttn-to-chirpstack",
+  "version": "0.1.0",
+  "description": "Translate TheThingsNetwork lorawan-devices entries into ChirpStack device profiles.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "license": "MIT",
+  "files": ["dist/", "lorawan-devices/vendor/"],
+  "engines": { "node": ">=14" },
+  "scripts": {
+    "build": "tsc",
+    "prepare": "npm run build",
+    "update-devices": "git submodule update --remote lorawan-devices",
+    "test": "npm run build && node test/smoke.js",
+    "docs": "typedoc && mv docs/README.md docs/api-doc.md"
+  },
+  "dependencies": {
+    "fuse.js": "^7.0.0",
+    "tar": "^6.2.0",
+    "yaml": "^2.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/tar": "^6.1.0",
+    "typedoc": "^0.28.0",
+    "typedoc-plugin-markdown": "^4.0.0",
+    "typescript": "^5.4.0"
+  }
+}
