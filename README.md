@@ -1,4 +1,4 @@
-# @intelligent-farming/ttn-to-chirpstack
+# @intelligentfarming/ttn-to-chirpstack
 
 Takes device definitions from TTN's [lorawan-devices](https://github.com/TheThingsNetwork/lorawan-devices) repo and converts them to ChirpStack device profiles.
 
@@ -7,7 +7,7 @@ Full API reference: [docs/api-doc.md](docs/api-doc.md). Regenerate with `npm run
 ## Install
 
 ```sh
-npm install @intelligent-farming/ttn-to-chirpstack
+npm install @intelligentfarming/ttn-to-chirpstack
 ```
 
 ## Usage
@@ -16,7 +16,7 @@ npm install @intelligent-farming/ttn-to-chirpstack
 import {
   vendors, devices, toChirpStack, search, updateDevices, cachePath,
   Region, Target,
-} from '@intelligent-farming/ttn-to-chirpstack';
+} from '@intelligentfarming/ttn-to-chirpstack';
 
 vendors();                              // Vendor[]
 devices('dragino');                     // string[]
