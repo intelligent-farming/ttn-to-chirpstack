@@ -1,6 +1,6 @@
 {
   "name": "@intelligent-farming/ttn-to-chirpstack",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Translate TheThingsNetwork lorawan-devices entries into ChirpStack device profiles.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -21,7 +21,7 @@
     },
     "./data/browser-catalog.json": "./data/browser-catalog.json"
   },
-  "license": "MIT",
+  "license": "AGPL-3.0-or-later",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/intelligent-farming/ttn-to-chirpstack.git"
