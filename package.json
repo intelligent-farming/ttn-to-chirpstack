@@ -22,10 +22,11 @@
     "./data/browser-catalog.json": "./data/browser-catalog.json"
   },
   "license": "MIT",
-  "files": ["dist/", "data/", "lorawan-devices/vendor/"],
+  "files": ["dist/", "data/", "scripts/fetch-devices.js"],
   "engines": { "node": ">=18" },
   "scripts": {
     "build": "tsc",
+    "postinstall": "node scripts/fetch-devices.js",
     "prepare": "npm run build-browser-catalog && npm run build",
     "build-browser-catalog": "node scripts/build-browser-catalog.js",
     "update-devices": "git submodule update --remote lorawan-devices",

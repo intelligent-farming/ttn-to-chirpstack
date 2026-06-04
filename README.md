@@ -10,6 +10,16 @@ Full API reference: [docs/api-doc.md](docs/api-doc.md). Regenerate with `npm run
 npm install @intelligentfarming/ttn-to-chirpstack
 ```
 
+The vendor catalog (~4 MB of YAML) is **not** in the published tarball — a `postinstall` script fetches it from `codeload.github.com` into the installed package directory. You need network access during `npm install`.
+
+If you install with `--ignore-scripts` (or pnpm/yarn equivalents), postinstall is skipped and the catalog will be missing. Fetch it manually:
+
+```sh
+node node_modules/@intelligentfarming/ttn-to-chirpstack/scripts/fetch-devices.js
+```
+
+Or call `updateDevices()` at runtime — it writes to the cache directory, which reads prefer over the package dir.
+
 ## Usage
 
 ```ts
@@ -43,7 +53,7 @@ search('sensecap light', Region.EU868, { limit: 5 });
 
 ## How the cache works
 
-Device data lives in two places: the snapshot baked into the installed package, and a cache directory on disk that `updateDevices()` writes to. Reads check the cache first and fall back to the bundled snapshot, and that check runs on every read, so once `updateDevices()` finishes you see the new data immediately.
+Device data lives in two places: the catalog inside the installed package (fetched by `postinstall`), and a cache directory on disk that `updateDevices()` writes to. Reads check the cache first and fall back to the package-dir catalog, and that check runs on every read, so once `updateDevices()` finishes you see the new data immediately.
 
 The cache path is the first of these that's set:
 
