@@ -1,17 +1,35 @@
 {
-  "name": "@intelligentfarming/ttn-to-chirpstack",
+  "name": "@intelligent-farming/ttn-to-chirpstack",
   "version": "0.1.0",
   "description": "Translate TheThingsNetwork lorawan-devices entries into ChirpStack device profiles.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "browser": {
+        "types": "./dist/browser.d.ts",
+        "default": "./dist/browser.js"
+      },
+      "default": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    },
+    "./browser": {
+      "types": "./dist/browser.d.ts",
+      "default": "./dist/browser.js"
+    },
+    "./data/browser-catalog.json": "./data/browser-catalog.json"
+  },
   "license": "MIT",
-  "files": ["dist/", "lorawan-devices/vendor/"],
+  "files": ["dist/", "data/", "lorawan-devices/vendor/"],
   "engines": { "node": ">=18" },
   "scripts": {
     "build": "tsc",
-    "prepare": "npm run build",
+    "prepare": "npm run build-browser-catalog && npm run build",
+    "build-browser-catalog": "node scripts/build-browser-catalog.js",
     "update-devices": "git submodule update --remote lorawan-devices",
-    "test": "npm run build && node --test --test-reporter=spec test/smoke.js",
+    "test": "npm run build && node --test --test-reporter=spec test/smoke.js test/browser-smoke.js",
     "docs": "typedoc && mv docs/README.md docs/api-doc.md"
   },
   "dependencies": {
