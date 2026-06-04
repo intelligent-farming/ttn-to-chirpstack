@@ -1,4 +1,4 @@
-# @intelligentfarming/ttn-to-chirpstack
+# @intelligent-farming/ttn-to-chirpstack
 
 Takes device definitions from TTN's [lorawan-devices](https://github.com/TheThingsNetwork/lorawan-devices) repo and converts them to ChirpStack device profiles.
 
