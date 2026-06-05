@@ -1,6 +1,6 @@
 {
   "name": "@intelligent-farming/ttn-to-chirpstack",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Translate TheThingsNetwork lorawan-devices entries into ChirpStack device profiles.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

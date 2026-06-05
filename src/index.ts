@@ -100,7 +100,7 @@ export const devices = (vendor: string): string[] => read(vendor, 'index.yaml').
  *
  * @example
  * ```ts
- * import { toChirpStack, Region, Target } from '@intelligentfarming/ttn-to-chirpstack';
+ * import { toChirpStack, Region, Target } from '@intelligent-farming/ttn-to-chirpstack';
  *
  * // ChirpStack v4 (default)
  * const v4 = toChirpStack('dragino', 'lds01', Region.EU868);
@@ -229,7 +229,7 @@ const buildSearchIndex = (): SearchIndexEntry[] => {
  *
  * @example
  * ```ts
- * import { search, Region } from '@intelligentfarming/ttn-to-chirpstack';
+ * import { search, Region } from '@intelligent-farming/ttn-to-chirpstack';
  * const hits = search('sensecap light', Region.EU868, { limit: 5 });
  * hits.forEach((p, i) => console.log(`${i + 1}. ${p.name}`));
  * ```

@@ -7,7 +7,7 @@ Full API reference: [docs/api-doc.md](docs/api-doc.md). Regenerate with `npm run
 ## Install
 
 ```sh
-npm install @intelligentfarming/ttn-to-chirpstack
+npm install @intelligent-farming/ttn-to-chirpstack
 ```
 
 The vendor catalog (~4 MB of YAML) is **not** in the published tarball — a `postinstall` script fetches it from `codeload.github.com` into the installed package directory. You need network access during `npm install`.
@@ -15,7 +15,7 @@ The vendor catalog (~4 MB of YAML) is **not** in the published tarball — a `po
 If you install with `--ignore-scripts` (or pnpm/yarn equivalents), postinstall is skipped and the catalog will be missing. Fetch it manually:
 
 ```sh
-node node_modules/@intelligentfarming/ttn-to-chirpstack/scripts/fetch-devices.js
+node node_modules/@intelligent-farming/ttn-to-chirpstack/scripts/fetch-devices.js
 ```
 
 Or call `updateDevices()` at runtime — it writes to the cache directory, which reads prefer over the package dir.
@@ -26,7 +26,7 @@ Or call `updateDevices()` at runtime — it writes to the cache directory, which
 import {
   vendors, devices, toChirpStack, search, updateDevices, cachePath,
   Region, Target,
-} from '@intelligentfarming/ttn-to-chirpstack';
+} from '@intelligent-farming/ttn-to-chirpstack';
 
 vendors();                              // Vendor[]
 devices('dragino');                     // string[]

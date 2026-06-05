@@ -1,4 +1,4 @@
-# @intelligentfarming/ttn-to-chirpstack
+# @intelligent-farming/ttn-to-chirpstack
 
 Translate device definitions from TheThingsNetwork's `lorawan-devices`
 repository into ChirpStack device profiles. ChirpStack v4 is the default
@@ -522,7 +522,7 @@ TTN region key; devices not supporting it are skipped.
 ##### Example
 
 ```ts
-import { search, Region } from '@intelligentfarming/ttn-to-chirpstack';
+import { search, Region } from '@intelligent-farming/ttn-to-chirpstack';
 const hits = search('sensecap light', Region.EU868, { limit: 5 });
 hits.forEach((p, i) => console.log(`${i + 1}. ${p.name}`));
 ```
@@ -566,7 +566,7 @@ TTN region key; devices not supporting it are skipped.
 ##### Example
 
 ```ts
-import { search, Region } from '@intelligentfarming/ttn-to-chirpstack';
+import { search, Region } from '@intelligent-farming/ttn-to-chirpstack';
 const hits = search('sensecap light', Region.EU868, { limit: 5 });
 hits.forEach((p, i) => console.log(`${i + 1}. ${p.name}`));
 ```
@@ -614,7 +614,7 @@ TTN region key (pass [Region](#region) or the bare string).
 ##### Example
 
 ```ts
-import { toChirpStack, Region, Target } from '@intelligentfarming/ttn-to-chirpstack';
+import { toChirpStack, Region, Target } from '@intelligent-farming/ttn-to-chirpstack';
 
 // ChirpStack v4 (default)
 const v4 = toChirpStack('dragino', 'lds01', Region.EU868);
@@ -665,7 +665,7 @@ TTN region key (pass [Region](#region) or the bare string).
 ##### Example
 
 ```ts
-import { toChirpStack, Region, Target } from '@intelligentfarming/ttn-to-chirpstack';
+import { toChirpStack, Region, Target } from '@intelligent-farming/ttn-to-chirpstack';
 
 // ChirpStack v4 (default)
 const v4 = toChirpStack('dragino', 'lds01', Region.EU868);
