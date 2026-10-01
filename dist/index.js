@@ -47,7 +47,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.cachePath = exports.updateDevices = exports.devices = exports.vendors = void 0;
+exports.cachePath = exports.updateDevices = exports.deviceInfo = exports.devices = exports.vendors = void 0;
 exports.toChirpStack = toChirpStack;
 exports.search = search;
 const fs_1 = __importDefault(require("fs"));
@@ -119,6 +119,28 @@ exports.vendors = vendors;
  */
 const devices = (vendor) => read(vendor, 'index.yaml').endDevices;
 exports.devices = devices;
+/**
+ * A device's name, description, and supported TTN region keys (from its first
+ * firmware version), or `null` when the device has no YAML in the catalog.
+ * Resolves devices missing from the vendor's `index.yaml`, as
+ * {@link toChirpStack} does.
+ *
+ * @example
+ * ```ts
+ * deviceInfo('dragino', 'lds01')?.regions; // ['EU863-870', 'US902-928', ...]
+ * ```
+ */
+const deviceInfo = (vendor, device) => {
+    if (!fs_1.default.existsSync(path_1.default.join(root(), vendor, `${device}.yaml`)))
+        return null;
+    const dev = read(vendor, `${device}.yaml`);
+    return {
+        name: dev.name,
+        description: dev.description ?? '',
+        regions: Object.keys(dev.firmwareVersions?.[0]?.profiles ?? {}),
+    };
+};
+exports.deviceInfo = deviceInfo;
 function toChirpStack(vendor, device, region, opts = {}) {
     return buildProfile(vendor, device, region, opts);
 }

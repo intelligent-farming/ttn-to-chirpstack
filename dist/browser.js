@@ -29,7 +29,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.searchHits = exports.devices = exports.vendors = exports.builtAt = void 0;
+exports.searchHits = exports.deviceInfo = exports.devices = exports.vendors = exports.builtAt = void 0;
 exports.toChirpStack = toChirpStack;
 exports.search = search;
 const fuse_js_1 = __importDefault(require("fuse.js"));
@@ -81,6 +81,23 @@ const devices = (vendor) => {
     return ids.slice();
 };
 exports.devices = devices;
+/**
+ * A device's name, description, and supported TTN region keys (from its first
+ * firmware version), or `null` when the device is not in the bundled catalog.
+ * Resolves devices that {@link devices} does not list (missing from the
+ * vendor's `index.yaml`), as {@link toChirpStack} does.
+ */
+const deviceInfo = (vendor, device) => {
+    const dev = CATALOG.deviceMetadata[`${vendor}/${device}`];
+    if (!dev)
+        return null;
+    return {
+        name: dev.name,
+        description: dev.description ?? '',
+        regions: Object.keys(dev.firmwareVersions?.[0]?.profiles ?? {}),
+    };
+};
+exports.deviceInfo = deviceInfo;
 function toChirpStack(vendor, device, region, opts = {}) {
     return buildProfile(vendor, device, region, opts);
 }

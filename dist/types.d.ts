@@ -72,6 +72,13 @@ export interface Vendor {
      */
     vendorID?: number;
 }
+/** Summary of one device entry, from {@link deviceInfo}. */
+export interface DeviceInfo {
+    name: string;
+    description: string;
+    /** TTN region keys the device's first firmware version has profiles for. */
+    regions: string[];
+}
 export interface ChirpStackV4DeviceProfile {
     name: string;
     description: string;

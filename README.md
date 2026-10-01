@@ -24,12 +24,13 @@ Or call `updateDevices()` at runtime — it writes to the cache directory, which
 
 ```ts
 import {
-  vendors, devices, toChirpStack, search, updateDevices, cachePath,
+  vendors, devices, deviceInfo, toChirpStack, search, updateDevices, cachePath,
   Region, Target,
 } from '@intelligent-farming/ttn-to-chirpstack';
 
 vendors();                              // Vendor[]
 devices('dragino');                     // string[]
+deviceInfo('dragino', 'lds01');         // { name, description, regions }, or null if unknown
 
 // v4 device profile, ready to hand to chirpstack-api.
 // `Region.EU868` resolves to "EU863-870" — the actual TTN key.
@@ -50,6 +51,26 @@ cachePath();   // wherever it just wrote
 search('dragino lds02', Region.US915);
 search('sensecap light', Region.EU868, { limit: 5 });
 ```
+
+## Browser entry
+
+Bundlers that honour the `"browser"` export condition (or an explicit
+`@intelligent-farming/ttn-to-chirpstack/browser` import) get the same API, minus
+`updateDevices()`/`cachePath()`, backed by `data/browser-catalog.json` instead of
+YAML on disk. That catalog is a subset, built by `npm run build-browser-catalog`:
+
+- **Full vendors:** every device and TTN codec from the vendors in
+  `FULL_VENDORS` in `scripts/build-browser-catalog.js` (override with
+  `CATALOG_VENDORS=a,b,c`).
+- **Normalized devices:** every device with a non-draft codec in
+  [`@intelligent-farming/lorawan-codec-normalization`](https://github.com/intelligent-farming/lorawan-codec-normalization)
+  (a devDependency), from any vendor, but **without** its TTN codec source:
+  `toChirpStack()` returns the profile with no script, and the consumer
+  installs the normalized codec. `CATALOG_NORMALIZED=0` skips this set.
+
+`devices()` and `search()` follow each vendor's `index.yaml`, matching the Node
+entry. Normalized devices missing from `index.yaml` are still shipped and
+resolve through `deviceInfo()` and `toChirpStack()`.
 
 ## How the cache works
 

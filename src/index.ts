@@ -19,7 +19,7 @@ import {
   Target,
   type RegionInput, type ToChirpStackOptions, type SearchOptions,
   type ChirpStackV4DeviceProfile, type ChirpStackV3DeviceProfile,
-  type Vendor, type Yaml, type LoadedDevice, type SearchIndexEntry,
+  type Vendor, type Yaml, type LoadedDevice, type SearchIndexEntry, type DeviceInfo,
   toV3, toV4,
 } from './types';
 
@@ -89,6 +89,27 @@ export const vendors = (): Vendor[] => read('index.yaml').vendors.filter((v: Yam
  * ```
  */
 export const devices = (vendor: string): string[] => read(vendor, 'index.yaml').endDevices;
+
+/**
+ * A device's name, description, and supported TTN region keys (from its first
+ * firmware version), or `null` when the device has no YAML in the catalog.
+ * Resolves devices missing from the vendor's `index.yaml`, as
+ * {@link toChirpStack} does.
+ *
+ * @example
+ * ```ts
+ * deviceInfo('dragino', 'lds01')?.regions; // ['EU863-870', 'US902-928', ...]
+ * ```
+ */
+export const deviceInfo = (vendor: string, device: string): DeviceInfo | null => {
+  if (!fs.existsSync(path.join(root(), vendor, `${device}.yaml`))) return null;
+  const dev: Yaml = read(vendor, `${device}.yaml`);
+  return {
+    name: dev.name,
+    description: dev.description ?? '',
+    regions: Object.keys(dev.firmwareVersions?.[0]?.profiles ?? {}),
+  };
+};
 
 /**
  * Translate a TTN device entry into a ChirpStack device profile.

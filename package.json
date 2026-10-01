@@ -1,6 +1,6 @@
 {
   "name": "@intelligent-farming/ttn-to-chirpstack",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Translate TheThingsNetwork lorawan-devices entries into ChirpStack device profiles.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -47,6 +47,7 @@
     "yaml": "^2.4.0"
   },
   "devDependencies": {
+    "@intelligent-farming/lorawan-codec-normalization": "^0.2.2",
     "@types/node": "^20.0.0",
     "@types/tar": "^6.1.0",
     "typedoc": "^0.28.0",

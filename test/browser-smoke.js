@@ -22,7 +22,7 @@ describe('browser entry — catalog metadata', () => {
   });
 
   test('exports the same symbols as the Node entry', () => {
-    for (const name of ['vendors', 'devices', 'toChirpStack', 'search', 'Region', 'Target']) {
+    for (const name of ['vendors', 'devices', 'deviceInfo', 'toChirpStack', 'search', 'Region', 'Target']) {
       assert.equal(typeof browser[name], typeof node[name], `${name} type mismatch`);
     }
   });
@@ -48,6 +48,50 @@ describe('vendors / devices listing', () => {
     const list = browser.devices('dragino');
     assert.ok(list.length > 5, 'Dragino sells many models');
     assert.ok(list.includes('lds01'));
+  });
+
+  test('resolves every normalized device that has a TTN entry', () => {
+    // CI's `npm install` runs `prepare`, which rebuilds the catalog against
+    // the installed lorawan-codec-normalization — so this guards the build
+    // script, not a stale committed catalog. Covers devices missing from the
+    // vendor's index.yaml (TTN's dragino index omits most -lb models): they
+    // resolve through deviceInfo()/toChirpStack() but stay out of devices().
+    const fs = require('node:fs');
+    const path = require('node:path');
+    const codecsDir = path.join(path.dirname(
+      require.resolve('@intelligent-farming/lorawan-codec-normalization/package.json')), 'codecs');
+    const ttnVendorDir = path.join(__dirname, '..', 'lorawan-devices', 'vendor');
+    const missing = [];
+    for (const vendor of fs.readdirSync(codecsDir)) {
+      const vendorDir = path.join(codecsDir, vendor);
+      if (!fs.statSync(vendorDir).isDirectory()) continue;
+      for (const device of fs.readdirSync(vendorDir)) {
+        const deviceJson = path.join(vendorDir, device, 'device.json');
+        if (!fs.existsSync(deviceJson) || !fs.existsSync(path.join(vendorDir, device, 'codec.js'))) continue;
+        if (JSON.parse(fs.readFileSync(deviceJson, 'utf8')).draft) continue;
+        // Codecs sourced outside TTN (vendor repos) have no TTN entry to ship.
+        if (!fs.existsSync(path.join(ttnVendorDir, vendor, `${device}.yaml`))) continue;
+        if (!browser.deviceInfo(vendor, device)?.regions.length) missing.push(`${vendor}/${device}`);
+      }
+    }
+    assert.deepEqual(missing, []);
+  });
+
+  test('deviceInfo() matches the Node entry, including unindexed devices', () => {
+    for (const [vendor, device] of [['dragino', 'lds01'], ['makerfabs', 'air-temperature-and-humidity'], ['dragino', 'dds04-lb']]) {
+      assert.deepEqual(browser.deviceInfo(vendor, device), node.deviceInfo(vendor, device), `${vendor}/${device}`);
+    }
+    assert.ok(browser.deviceInfo('dragino', 'lds01').regions.length > 0);
+    assert.ok(!browser.devices('dragino').includes('dds04-lb'), 'unindexed device stays out of devices()');
+    assert.equal(browser.deviceInfo('makerfabs', 'no-such-device'), null);
+    assert.equal(node.deviceInfo('makerfabs', 'no-such-device'), null);
+  });
+
+  test('normalized-only devices omit the TTN codec; curated vendors keep it', () => {
+    const makerfabs = browser.toChirpStack('makerfabs', 'air-temperature-and-humidity', Region.US915);
+    assert.ok(!makerfabs.payloadCodecScript, 'normalized-only device should ship no TTN codec');
+    const dragino = browser.toChirpStack('dragino', 'lds01', Region.EU868);
+    assert.ok(dragino.payloadCodecScript, 'curated vendor should keep its TTN codec');
   });
 
   test('devices() throws for vendors outside the curated subset', () => {

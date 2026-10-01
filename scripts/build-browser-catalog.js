@@ -4,18 +4,27 @@
 //
 // Why a curated subset? The full TheThingsNetwork/lorawan-devices repo has
 // 200+ vendors and thousands of profile YAMLs — bundling all of it would
-// inflate the SPA by 10+ MB. Leftenant only needs the vendors its operators
-// actually ship. The list below covers the main LoRaWAN OEMs and matches the
-// brands `lorawan-qr-decoder` already identifies via OUI.
+// inflate the SPA by 10+ MB. The catalog is the union of two sets:
 //
-// To add a vendor: append its slug to CURATED below, then re-run this script.
+//   1. FULL_VENDORS — every device from the main LoRaWAN OEMs, matching the
+//      brands `lorawan-qr-decoder` already identifies via OUI. Override with
+//      CATALOG_VENDORS=a,b,c.
+//   2. Every device that has a non-draft codec in
+//      @intelligent-farming/lorawan-codec-normalization, whatever its vendor.
+//      Its codecs/<vendor>/<device>/ ids are TTN ids, so a device the registry
+//      normalizes is always one the browser catalog can resolve. Only those
+//      devices are added, not the vendor's whole line, and without their TTN
+//      codec source (see below) — with it the bundle roughly triples.
+//      CATALOG_NORMALIZED=0 skips this set.
+//
+// Re-run after either changes:
 //   npm run build-browser-catalog
 
 const fs = require('fs');
 const path = require('path');
 const YAML = require('yaml');
 
-const CURATED = (process.env.CATALOG_VENDORS ?? [
+const FULL_VENDORS = (process.env.CATALOG_VENDORS ?? [
   'adeunis',
   'browan',
   'decentlab',
@@ -34,7 +43,43 @@ const OUT = path.join(__dirname, '..', 'data', 'browser-catalog.json');
 
 const read = (...p) => YAML.parse(fs.readFileSync(path.join(VENDOR_DIR, ...p), 'utf8'));
 
+/**
+ * vendor → device ids with a non-draft codec in lorawan-codec-normalization.
+ * Fails loudly when the package is missing rather than silently shipping a
+ * catalog without those devices — that silent gap is what kept Makerfabs out
+ * of Leftenant's model search.
+ */
+const normalizedDevices = () => {
+  if (process.env.CATALOG_NORMALIZED === '0') return new Map();
+  let root;
+  try {
+    root = path.dirname(require.resolve('@intelligent-farming/lorawan-codec-normalization/package.json'));
+  } catch {
+    throw new Error(
+      '@intelligent-farming/lorawan-codec-normalization is not installed (it is a devDependency). '
+      + 'Run `npm install`, or set CATALOG_NORMALIZED=0 to build without it.',
+    );
+  }
+  const codecsDir = path.join(root, 'codecs');
+  const byVendor = new Map();
+  for (const vendor of fs.readdirSync(codecsDir)) {
+    const vendorDir = path.join(codecsDir, vendor);
+    if (!fs.statSync(vendorDir).isDirectory()) continue;
+    for (const device of fs.readdirSync(vendorDir)) {
+      const deviceJson = path.join(vendorDir, device, 'device.json');
+      if (!fs.existsSync(deviceJson) || !fs.existsSync(path.join(vendorDir, device, 'codec.js'))) continue;
+      if (JSON.parse(fs.readFileSync(deviceJson, 'utf8')).draft) continue;
+      if (!byVendor.has(vendor)) byVendor.set(vendor, new Set());
+      byVendor.get(vendor).add(device);
+    }
+  }
+  return byVendor;
+};
+
 const main = () => {
+  const normalized = normalizedDevices();
+  const CURATED = [...new Set([...FULL_VENDORS, ...normalized.keys()])];
+
   const vendorsIndex = read('index.yaml').vendors.filter(v => !v.draft);
   const includedVendors = vendorsIndex.filter(v => CURATED.includes(v.id));
 
@@ -62,9 +107,28 @@ const main = () => {
       console.warn(`[skip] ${vendor}: not in lorawan-devices/`);
       continue;
     }
-    const deviceList = read(vendor, 'index.yaml').endDevices ?? [];
+    const full = FULL_VENDORS.includes(vendor);
+    const wanted = normalized.get(vendor) ?? new Set();
+    const indexed = read(vendor, 'index.yaml').endDevices ?? [];
+    // `devices` drives devices() and search, so it mirrors index.yaml exactly
+    // as the Node entry does.
+    const deviceList = full ? indexed : indexed.filter(d => wanted.has(d));
     catalog.devices[vendor] = deviceList;
-    for (const device of deviceList) {
+    // A vendor's index.yaml can omit devices whose YAML is present (TTN's
+    // dragino index lists 34 of ~200). Ship metadata and profiles for any
+    // normalized device that has one, so toChirpStack() and deviceInfo()
+    // resolve it, as they do in the Node entry, which reads the YAML directly.
+    const unindexed = [...wanted].filter(d => !indexed.includes(d));
+    for (const device of unindexed) {
+      if (!fs.existsSync(path.join(dir, `${device}.yaml`))) {
+        console.warn(`[skip device] ${vendor}/${device}: not in lorawan-devices/`);
+      }
+    }
+    for (const device of [...deviceList, ...unindexed]) {
+      if (!fs.existsSync(path.join(dir, `${device}.yaml`))) continue;
+      // Devices present only for their normalized codec skip the TTN codec
+      // source (see below).
+      const withCodec = full && indexed.includes(device);
       try {
         const dev = read(vendor, `${device}.yaml`);
         catalog.deviceMetadata[`${vendor}/${device}`] = {
@@ -86,7 +150,12 @@ const main = () => {
                 console.warn(`[skip profile] ${profileKey}: ${err.message}`);
               }
             }
-            if (ref.codec) {
+            // TTN codec source is ~93% of the catalog's bytes. A consumer that
+            // pairs this catalog with lorawan-codec-normalization (as Leftenant
+            // does) prefers the normalized codec and already bundles it, so
+            // devices present only for that codec get no script from
+            // toChirpStack().
+            if (ref.codec && withCodec) {
               const codecKey = `${vendor}/${ref.codec}`;
               if (!catalog.codecs[codecKey]) {
                 try {

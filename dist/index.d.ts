@@ -6,7 +6,7 @@
  *
  * @packageDocumentation
  */
-import { Target, type RegionInput, type ToChirpStackOptions, type SearchOptions, type ChirpStackV4DeviceProfile, type ChirpStackV3DeviceProfile, type Vendor } from './types';
+import { Target, type RegionInput, type ToChirpStackOptions, type SearchOptions, type ChirpStackV4DeviceProfile, type ChirpStackV3DeviceProfile, type Vendor, type DeviceInfo } from './types';
 export * from './types';
 /**
  * List vendors from the TTN repo, excluding entries marked `draft: true`.
@@ -28,6 +28,18 @@ export declare const vendors: () => Vendor[];
  * ```
  */
 export declare const devices: (vendor: string) => string[];
+/**
+ * A device's name, description, and supported TTN region keys (from its first
+ * firmware version), or `null` when the device has no YAML in the catalog.
+ * Resolves devices missing from the vendor's `index.yaml`, as
+ * {@link toChirpStack} does.
+ *
+ * @example
+ * ```ts
+ * deviceInfo('dragino', 'lds01')?.regions; // ['EU863-870', 'US902-928', ...]
+ * ```
+ */
+export declare const deviceInfo: (vendor: string, device: string) => DeviceInfo | null;
 /**
  * Translate a TTN device entry into a ChirpStack device profile.
  *

@@ -17,7 +17,7 @@ import {
   Target,
   type RegionInput, type ToChirpStackOptions, type SearchOptions,
   type ChirpStackV4DeviceProfile, type ChirpStackV3DeviceProfile,
-  type Vendor, type Yaml, type LoadedDevice, type SearchIndexEntry,
+  type Vendor, type Yaml, type LoadedDevice, type SearchIndexEntry, type DeviceInfo,
   toV3, toV4,
 } from './types';
 
@@ -84,6 +84,22 @@ export const devices = (vendor: string): string[] => {
   const ids = CATALOG.devices[vendor];
   if (!ids) throw new Error(`vendor not in bundled catalog: ${vendor}. Did you mean to rebuild with CATALOG_VENDORS?`);
   return ids.slice();
+};
+
+/**
+ * A device's name, description, and supported TTN region keys (from its first
+ * firmware version), or `null` when the device is not in the bundled catalog.
+ * Resolves devices that {@link devices} does not list (missing from the
+ * vendor's `index.yaml`), as {@link toChirpStack} does.
+ */
+export const deviceInfo = (vendor: string, device: string): DeviceInfo | null => {
+  const dev = CATALOG.deviceMetadata[`${vendor}/${device}`];
+  if (!dev) return null;
+  return {
+    name: dev.name,
+    description: dev.description ?? '',
+    regions: Object.keys(dev.firmwareVersions?.[0]?.profiles ?? {}),
+  };
 };
 
 /** Translate a TTN device entry into a ChirpStack device profile. */
